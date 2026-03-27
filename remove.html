@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        select, input, button { padding: 10px; font-size: 18px; border-radius: 8px; border: 1px solid #ccc; }
+        button { background: #e74c3c; color: white; border: none; }
+    </style>
+</head>
+<body>
+    <h3>♻️ Списання шин</h3>
+    <select id="diam">
+        <option value="R13">R13</option>
+        <option value="R14">R14</option>
+        <option value="R15">R15</option>
+        <option value="R16">R16</option>
+        <option value="R17">R17</option>
+        <option value="R18">R18</option>
+    </select>
+    <input type="number" id="qty" value="1" min="1">
+    <button onclick="send()">Списати зі складу</button>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        function send() {
+            const d = document.getElementById('diam').value;
+            const q = document.getElementById('qty').value;
+            // Відправляємо спеціальну мітку REMOVE
+            tg.sendData(`REMOVE ${d} ${q}`);
+        }
+    </script>
+</body>
+</html>
