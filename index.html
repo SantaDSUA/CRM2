@@ -6,21 +6,19 @@
     <title>Tires CRM</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5; color: #333; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
-        h3 { text-align: center; color: #248bcf; margin-top: 0; }
-        label { display: block; margin-top: 15px; font-size: 14px; font-weight: bold; }
+        body { font-family: sans-serif; padding: 20px; background-color: #f0f2f5; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        h3 { text-align: center; color: #248bcf; margin-bottom: 20px; }
+        label { display: block; margin-top: 15px; font-weight: bold; font-size: 14px; }
         select, input { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .result-box { background: #eef7ff; padding: 15px; border-radius: 10px; margin-top: 20px; border-left: 5px solid #248bcf; }
-        .result-item { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .total { font-size: 18px; font-weight: bold; color: #248bcf; }
-        button { width: 100%; padding: 15px; background: #248bcf; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 20px; transition: background 0.3s; }
+        .result { background: #eef7ff; padding: 15px; border-radius: 10px; margin-top: 20px; font-weight: bold; border-left: 5px solid #248bcf; text-align: center; }
+        button { width: 100%; padding: 15px; background: #248bcf; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 20px; }
         button:active { background: #1a6fa3; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h3>📦 Прийом коліс</h3>
+        <h3>📦 Облік шин</h3>
         
         <label>Діаметр (R):</label>
         <select id="diameter" onchange="calculate()">
@@ -36,37 +34,48 @@
         <label>Кількість (шт):</label>
         <input type="number" id="count" value="1" min="1" oninput="calculate()">
 
-        <div class="result-box">
-            <div class="result-item">
-                <span>Вага одного:</span>
-                <span id="single-weight">6.5 кг</span>
-            </div>
-            <div class="result-item total">
-                <span>ЗАГАЛЬНА ВАГА:</span>
-                <span id="total-weight">6.5 кг</span>
-            </div>
+        <div class="result">
+            ЗАГАЛЬНА ВАГА: <span id="total-weight">6.5</span> кг
         </div>
 
+        <button onclick="sendData()">💾 ЗБЕРЕГТИ В БАЗУ</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        function calculate() {
+            const select = document.getElementById('diameter');
+            const count = document.getElementById('count').value || 0;
+            const weight = select.options[select.selectedIndex].getAttribute('data-weight');
+            const total = (weight * count).toFixed(1);
+            document.getElementById('total-weight').innerText = total;
+        }
+
         async function sendData() {
-    const diameter = document.getElementById('diameter').value;
-    const count = document.getElementById('count').value;
-    const weight = document.getElementById('total-weight').innerText.replace(' кг', '');
+            const diam = document.getElementById('diameter').value;
+            const count = document.getElementById('count').value;
+            const weight = document.getElementById('total-weight').innerText;
 
-    const token = "8747176381:AAHiAGbVm2qSAeV6SlW04RaJe7o8VXzWhQw";
-    // Дізнайтеся свій ID у бота @userinfobot і впишіть сюди замість 123456789
-    const chatId = "ВАШ_ID_ЦИФРАМИ"; 
+            const token = "8747176381:AAHiAGbVm2qSAeV6SlW04RaJe7o8VXzWhQw";
+            const chatId = "604701872"; 
 
-    const message = `ПРИЙОМ R${diameter} КІЛЬКІСТЬ ${count} ВАГА ${weight}`;
-    const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+            const message = `ПРИЙОМ R${diam} КІЛЬКІСТЬ ${count} ВАГА ${weight}`;
+            const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
 
-    try {
-        await fetch(url); // Надсилаємо запит напряму в Telegram
-        alert("✅ Дані надіслано до бота!");
-        tg.close();
-    } catch (e) {
-        alert("Помилка мережі: " + e.message);
-    }
-}
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    alert("✅ Дані успішно надіслано!");
+                    tg.close();
+                } else {
+                    alert("Помилка API Telegram");
+                }
+            } catch (e) {
+                alert("Помилка мережі: " + e.message);
+            }
+        }
     </script>
 </body>
 </html>
