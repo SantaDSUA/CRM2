@@ -3,33 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRM ШИНИ</title>
+    <title>КАЛЬКУЛЯТОР ШИН</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; padding: 15px; background: #f4f7f6; color: #333; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; margin-bottom: 20px; color: #2c3e50; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
-        select, input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab { flex: 1; padding: 10px; text-align: center; background: #eee; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .tab.active { background: #3498db; color: white; }
-        .tab.active.sell { background: #e74c3c; }
-        #btn-save { width: 100%; padding: 15px; border: none; border-radius: 10px; color: white; font-size: 18px; font-weight: bold; cursor: pointer; background: #3498db; }
+        body { font-family: 'Segoe UI', sans-serif; padding: 15px; background: #f0f2f5; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        h2 { text-align: center; color: #1a73e8; margin-top: 0; }
+        label { display: block; margin: 10px 0 5px; font-weight: 600; color: #555; }
+        select, input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; transition: 0.3s; }
+        select:focus, input:focus { border-color: #1a73e8; }
+        .total-box { background: #e8f0fe; padding: 10px; border-radius: 8px; margin: 15px 0; text-align: center; font-weight: bold; color: #1967d2; }
+        #btn-send { width: 100%; padding: 15px; border: none; border-radius: 10px; color: white; font-size: 18px; font-weight: bold; cursor: pointer; background: #1a73e8; }
+        .mode-toggle { display: flex; gap: 10px; margin-bottom: 20px; }
+        .m-btn { flex: 1; padding: 10px; text-align: center; background: #ddd; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .m-btn.active { background: #1a73e8; color: white; }
+        .m-btn.active.red { background: #d93025; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 id="title">📦 Облік шин</h2>
+    <h2 id="header">Шинний Калькулятор</h2>
     
-    <div class="tabs">
-        <div id="tab-add" class="tab active" onclick="setMode('ADD')">➕ ПРИХІД</div>
-        <div id="tab-sub" class="tab" onclick="setMode('REMOVE')">➖ СПИСАННЯ</div>
+    <div class="mode-toggle">
+        <div id="m-add" class="m-btn active" onclick="setMode('ADD')">ПРИЙОМ</div>
+        <div id="m-sub" class="m-btn" onclick="setMode('REMOVE')">СПИСАННЯ</div>
     </div>
 
-    <label>Діаметр (R):</label>
-    <select id="diameter">
+    <label>Оберіть радіус (R):</label>
+    <select id="diameter" onchange="updateWeight()">
         <option value="R13">R13</option>
         <option value="R14">R14</option>
         <option value="R15">R15</option>
@@ -41,49 +43,68 @@
     </select>
 
     <label>Кількість (шт):</label>
-    <input type="number" id="count" value="1" min="1">
+    <input type="number" id="count" value="1" min="1" oninput="updateWeight()">
 
-    <div id="weight-section">
-        <label>Загальна вага (кг):</label>
-        <input type="number" id="weight" step="0.1" placeholder="Введіть вагу">
+    <label>Вага за 1 шт (кг):</label>
+    <input type="number" id="unit-weight" step="0.1" oninput="updateWeight()">
+
+    <div class="total-box">
+        ЗАГАЛЬНА ВАГА: <span id="total-w">0</span> кг
     </div>
 
-    <button id="btn-save" onclick="sendData()">ЗБЕРЕГТИ</button>
+    <button id="btn-send" onclick="send()">ЗБЕРЕГТИ В БАЗУ</button>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
+
+    // ВАШІ СТАЛІ ЗНАЧЕННЯ ВАГИ
+    const weights = {
+        "R13": 6.5, "R14": 7.5, "R15": 8.5, "R16": 9.5,
+        "R17": 11.0, "R18": 12.5, "R19": 14.0, "R20": 16.0
+    };
+
     let mode = 'ADD';
 
-    function setMode(newMode) {
-        mode = newMode;
-        document.getElementById('tab-add').classList.toggle('active', mode === 'ADD');
-        document.getElementById('tab-sub').classList.toggle('active', mode === 'REMOVE');
-        
-        const btn = document.getElementById('btn-save');
-        const weightSection = document.getElementById('weight-section');
-        
-        if (mode === 'ADD') {
-            btn.style.background = '#3498db';
-            btn.innerText = 'ДОДАТИ НА СКЛАД';
-            weightSection.style.display = 'block';
-        } else {
-            btn.style.background = '#e74c3c';
-            btn.innerText = 'СПИСАТИ ЗІ СКЛАДУ';
-            weightSection.style.display = 'none';
-        }
+    function setMode(m) {
+        mode = m;
+        document.getElementById('m-add').classList.toggle('active', m === 'ADD');
+        document.getElementById('m-sub').classList.toggle('active', m === 'REMOVE');
+        document.getElementById('m-sub').classList.toggle('red', m === 'REMOVE');
+        document.getElementById('btn-send').style.background = (m === 'ADD') ? '#1a73e8' : '#d93025';
+        updateWeight();
     }
 
-    function sendData() {
+    function updateWeight() {
         const d = document.getElementById('diameter').value;
         const c = document.getElementById('count').value;
-        const w = document.getElementById('weight').value || "0";
+        const unitInput = document.getElementById('unit-weight');
         
-        // Формуємо спец-рядок для бота
-        const message = `${mode} ${d} КІЛЬКІСТЬ ${c} ВАГА ${w}`;
-        tg.sendData(message);
+        // Якщо поле порожнє, підставляємо сталу вагу
+        if (!unitInput.value || unitInput.dataset.auto === "true") {
+            unitInput.value = weights[d];
+            unitInput.dataset.auto = "true";
+        }
+
+        const total = (unitInput.value * c).toFixed(2);
+        document.getElementById('total-w').innerText = total;
     }
+
+    // Відстежуємо, чи користувач міняв вагу вручну
+    document.getElementById('unit-weight').onfocus = function() { this.dataset.auto = "false"; };
+
+    function send() {
+        const d = document.getElementById('diameter').value;
+        const c = document.getElementById('count').value;
+        const tw = document.getElementById('total-w').innerText;
+        
+        const msg = `${mode} ${d} КІЛЬКІСТЬ ${c} ВАГА ${tw}`;
+        tg.sendData(msg);
+    }
+
+    // Початкова ініціалізація
+    updateWeight();
 </script>
 
 </body>
