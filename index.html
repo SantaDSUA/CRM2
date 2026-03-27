@@ -53,29 +53,19 @@
             document.getElementById('total-weight').innerText = total;
         }
 
-        async function sendData() {
-            const diam = document.getElementById('diameter').value;
-            const count = document.getElementById('count').value;
-            const weight = document.getElementById('total-weight').innerText;
+        function sendData() {
+    const diam = document.getElementById('diameter').value;
+    const count = document.getElementById('count').value;
+    const weight = document.getElementById('total-weight').innerText;
 
-            const token = "8747176381:AAHiAGbVm2qSAeV6SlW04RaJe7o8VXzWhQw";
-            const chatId = "604701872"; 
-
-            const message = `ПРИЙОМ R${diam} КІЛЬКІСТЬ ${count} ВАГА ${weight}`;
-            const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
-
-            try {
-                const response = await fetch(url);
-                if (response.ok) {
-                    alert("✅ Дані успішно надіслано!");
-                    tg.close();
-                } else {
-                    alert("Помилка API Telegram");
-                }
-            } catch (e) {
-                alert("Помилка мережі: " + e.message);
-            }
-        }
+    // Формуємо рядок даних (точно такий же формат)
+    const dataString = `ПРИЙОМ R${diam} КІЛЬКІСТЬ ${count} ВАГА ${weight}`;
+    
+    // ВІДПРАВЛЯЄМО ДАНІ В БОТ (через вбудований метод WebApp)
+    tg.sendData(dataString); 
+    
+    // Додаток закриється автоматично після sendData
+}
     </script>
 </body>
 </html>
