@@ -47,35 +47,26 @@
             </div>
         </div>
 
-        <button onclick="sendData()">💾 ЗБЕРЕГТИ В БАЗУ</button>
-    </div>
+        async function sendData() {
+    const diameter = document.getElementById('diameter').value;
+    const count = document.getElementById('count').value;
+    const weight = document.getElementById('total-weight').innerText.replace(' кг', '');
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+    const token = "8747176381:AAHiAGbVm2qSAeV6SlW04RaJe7o8VXzWhQw";
+    // Дізнайтеся свій ID у бота @userinfobot і впишіть сюди замість 123456789
+    const chatId = "ВАШ_ID_ЦИФРАМИ"; 
 
-        function calculate() {
-            const select = document.getElementById('diameter');
-            const count = document.getElementById('count').value || 0;
-            const weight = select.options[select.selectedIndex].getAttribute('data-weight');
-            const total = (weight * count).toFixed(1);
-            
-            document.getElementById('single-weight').innerText = weight + " кг";
-            document.getElementById('total-weight').innerText = total + " кг";
-        }
+    const message = `ПРИЙОМ R${diameter} КІЛЬКІСТЬ ${count} ВАГА ${weight}`;
+    const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
 
-        function sendData() {
-            const diam = document.getElementById('diameter').value;
-            const count = document.getElementById('count').value;
-            const weight = document.getElementById('total-weight').innerText.replace(' кг', '');
-
-            // Формуємо рядок: ПРИЙОМ R15 КІЛЬКІСТЬ 4 ВАГА 35.2
-            const message = `ПРИЙОМ R${diam} КІЛЬКІСТЬ ${count} ВАГА ${weight}`;
-            
-            tg.sendData(message);
-            tg.close();
-        }
+    try {
+        await fetch(url); // Надсилаємо запит напряму в Telegram
+        alert("✅ Дані надіслано до бота!");
+        tg.close();
+    } catch (e) {
+        alert("Помилка мережі: " + e.message);
+    }
+}
     </script>
 </body>
 </html>
