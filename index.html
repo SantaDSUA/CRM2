@@ -97,45 +97,33 @@
     <button id="submit-btn" onclick="sendData()">Зберегти в базу</button>
 
     <script>
-        // Ініціалізація Telegram WebApp
-        const tg = window.Telegram.WebApp;
-        tg.expand(); // Розгорнути на весь екран
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-        function calculate() {
-            const select = document.getElementById('diameter');
-            const count = document.getElementById('count').value;
-            const weightPerOne = select.options[select.selectedIndex].getAttribute('data-weight');
-            
-            const total = (weightPerOne * count).toFixed(2);
-            
-            document.getElementById('single-weight').innerText = weightPerOne + " кг";
-            document.getElementById('total-weight').innerText = total + " кг";
-        }
-
-      async function sendData() {
-    const diameter = document.getElementById('diameter').value;
-    const count = document.getElementById('count').value;
-    const totalWeight = document.getElementById('total-weight').innerText;
-
-    const message = `📥 Новий прийом: R${diameter}, ${count} шт. (${totalWeight})`;
-
-    // ВАЖЛИВО: замініть ТОКЕН та ВАШ_ID
-    const token = "ВАШ_ТОКЕН_БОТА"; 
-    const chatId = "ВАШ_ОСОБИСТИЙ_ID_ТЕЛЕГРАМ"; // Можна дізнатися у бота @userinfobot
-
-    const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
-
-    try {
-        await fetch(url); // Відправляємо дані прямо в Telegram API
-        alert("Дані збережено!");
-        window.Telegram.WebApp.close();
-    } catch (e) {
-        alert("Помилка відправки!");
+    function calculate() {
+        const select = document.getElementById('diameter');
+        const count = document.getElementById('count').value;
+        const weightPerOne = select.options[select.selectedIndex].getAttribute('data-weight');
+        const total = (weightPerOne * count).toFixed(2);
+        
+        document.getElementById('single-weight').innerText = weightPerOne + " кг";
+        document.getElementById('total-weight').innerText = total + " кг";
     }
-}
 
-        // Початковий розрахунок
-        calculate();
-    </script>
+    function sendData() {
+        const diameter = document.getElementById('diameter').value;
+        const count = document.getElementById('count').value;
+        const totalWeight = document.getElementById('total-weight').innerText;
+
+        // Формуємо спец-текст, який зрозуміє наш Python-код
+        const report = `ПРИЙОМ R${diameter} КІЛЬКІСТЬ ${count} ВАГА ${totalWeight.replace(' кг', '')}`;
+
+        // Відправляємо дані через стандартний метод Telegram
+        tg.sendData(report);
+        tg.close();
+    }
+
+    calculate();
+</script>
 </body>
 </html>
