@@ -97,33 +97,35 @@
     <button id="submit-btn" onclick="sendData()">Зберегти в базу</button>
 
     <script>
+    // 1. Перевірка ініціалізації
     const tg = window.Telegram.WebApp;
+    
+    // Повідомимо Telegram, що ми готові
+    tg.ready();
     tg.expand();
 
-    function calculate() {
-        const select = document.getElementById('diameter');
-        const count = document.getElementById('count').value;
-        const weightPerOne = select.options[select.selectedIndex].getAttribute('data-weight');
-        const total = (weightPerOne * count).toFixed(2);
-        
-        document.getElementById('single-weight').innerText = weightPerOne + " кг";
-        document.getElementById('total-weight').innerText = total + " кг";
-    }
-
     function sendData() {
-        const diameter = document.getElementById('diameter').value;
-        const count = document.getElementById('count').value;
-        const totalWeight = document.getElementById('total-weight').innerText;
+        try {
+            const diameter = document.getElementById('diameter').value;
+            const count = document.getElementById('count').value;
+            const totalWeight = document.getElementById('total-weight').innerText;
 
-        // Формуємо спец-текст, який зрозуміє наш Python-код
-        const report = `ПРИЙОМ R${diameter} КІЛЬКІСТЬ ${count} ВАГА ${totalWeight.replace(' кг', '')}`;
+            const report = `ПРИЙОМ R${diameter} КІЛЬКІСТЬ ${count} ВАГА ${totalWeight.replace(' кг', '')}`;
 
-        // Відправляємо дані через стандартний метод Telegram
-        tg.sendData(report);
-        tg.close();
+            // ДІАГНОСТИКА №1: Чи бачить додаток дані?
+            alert("Готую до відправки: " + report);
+
+            // Спроба відправити
+            tg.sendData(report);
+
+            // ДІАГНОСТИКА №2: Якщо вікно не закрилося, значить sendData зламався
+            alert("Спробував відправити. Закриваю додаток...");
+            
+            tg.close();
+        } catch (e) {
+            alert("Помилка JavaScript: " + e.message);
+        }
     }
-
-    calculate();
 </script>
 </body>
 </html>
