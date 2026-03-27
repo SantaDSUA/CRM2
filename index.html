@@ -3,70 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRM Утилізація Коліс</title>
+    <title>Tires CRM</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --tg-theme-bg-color: #ffffff;
-            --tg-theme-text-color: #000000;
-            --tg-theme-button-color: #2481cc;
-            --tg-theme-button-text-color: #ffffff;
-            --tg-theme-hint-color: #999999;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color);
-            color: var(--tg-theme-text-color);
-            margin: 0;
-            padding: 20px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        select, input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        .result-card {
-            background-color: rgba(36, 129, 204, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            border: 1px dashed var(--tg-theme-button-color);
-        }
-        .result-line {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
-        #submit-btn {
-            width: 100%;
-            background-color: var(--tg-theme-button-color);
-            color: var(--tg-theme-button-text-color);
-            border: none;
-            padding: 15px;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        h3 { text-align: center; color: #248bcf; margin-top: 0; }
+        label { display: block; margin-top: 15px; font-size: 14px; font-weight: bold; }
+        select, input { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .result-box { background: #eef7ff; padding: 15px; border-radius: 10px; margin-top: 20px; border-left: 5px solid #248bcf; }
+        .result-item { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .total { font-size: 18px; font-weight: bold; color: #248bcf; }
+        button { width: 100%; padding: 15px; background: #248bcf; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 20px; transition: background 0.3s; }
+        button:active { background: #1a6fa3; }
     </style>
 </head>
 <body>
-
-    <h2>📦 Прийом коліс</h2>
-
-    <div class="form-group">
-        <label for="diameter">Діаметр колеса (R)</label>
+    <div class="card">
+        <h3>📦 Прийом коліс</h3>
+        
+        <label>Діаметр (R):</label>
         <select id="diameter" onchange="calculate()">
             <option value="13" data-weight="6.5">R13 (~6.5 кг)</option>
             <option value="14" data-weight="7.5">R14 (~7.5 кг)</option>
@@ -76,56 +32,50 @@
             <option value="18" data-weight="13.5">R18 (~13.5 кг)</option>
             <option value="20" data-weight="16.0">R20 (~16.0 кг)</option>
         </select>
-    </div>
 
-    <div class="form-group">
-        <label for="count">Кількість (шт)</label>
+        <label>Кількість (шт):</label>
         <input type="number" id="count" value="1" min="1" oninput="calculate()">
-    </div>
 
-    <div class="result-card">
-        <div class="result-line">
-            <span>Вага одного:</span>
-            <span id="single-weight">6.5 кг</span>
+        <div class="result-box">
+            <div class="result-item">
+                <span>Вага одного:</span>
+                <span id="single-weight">6.5 кг</span>
+            </div>
+            <div class="result-item total">
+                <span>ЗАГАЛЬНА ВАГА:</span>
+                <span id="total-weight">6.5 кг</span>
+            </div>
         </div>
-        <div class="result-line" style="font-weight: bold; color: var(--tg-theme-button-color);">
-            <span>ЗАГАЛЬНА ВАГА:</span>
-            <span id="total-weight">6.5 кг</span>
-        </div>
-    </div>
 
-    <button id="submit-btn" onclick="sendData()">Зберегти в базу</button>
+        <button onclick="sendData()">💾 ЗБЕРЕГТИ В БАЗУ</button>
+    </div>
 
     <script>
-    // 1. Перевірка ініціалізації
-    const tg = window.Telegram.WebApp;
-    
-    // Повідомимо Telegram, що ми готові
-    tg.ready();
-    tg.expand();
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
 
-    function sendData() {
-        try {
-            const diameter = document.getElementById('diameter').value;
-            const count = document.getElementById('count').value;
-            const totalWeight = document.getElementById('total-weight').innerText;
-
-            const report = `ПРИЙОМ R${diameter} КІЛЬКІСТЬ ${count} ВАГА ${totalWeight.replace(' кг', '')}`;
-
-            // ДІАГНОСТИКА №1: Чи бачить додаток дані?
-            alert("Готую до відправки: " + report);
-
-            // Спроба відправити
-            tg.sendData(report);
-
-            // ДІАГНОСТИКА №2: Якщо вікно не закрилося, значить sendData зламався
-            alert("Спробував відправити. Закриваю додаток...");
+        function calculate() {
+            const select = document.getElementById('diameter');
+            const count = document.getElementById('count').value || 0;
+            const weight = select.options[select.selectedIndex].getAttribute('data-weight');
+            const total = (weight * count).toFixed(1);
             
-            tg.close();
-        } catch (e) {
-            alert("Помилка JavaScript: " + e.message);
+            document.getElementById('single-weight').innerText = weight + " кг";
+            document.getElementById('total-weight').innerText = total + " кг";
         }
-    }
-</script>
+
+        function sendData() {
+            const diam = document.getElementById('diameter').value;
+            const count = document.getElementById('count').value;
+            const weight = document.getElementById('total-weight').innerText.replace(' кг', '');
+
+            // Формуємо рядок: ПРИЙОМ R15 КІЛЬКІСТЬ 4 ВАГА 35.2
+            const message = `ПРИЙОМ R${diam} КІЛЬКІСТЬ ${count} ВАГА ${weight}`;
+            
+            tg.sendData(message);
+            tg.close();
+        }
+    </script>
 </body>
 </html>
