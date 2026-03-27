@@ -3,69 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tires CRM</title>
+    <title>CRM ШИНИ</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f0f2f5; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
-        h3 { text-align: center; color: #248bcf; margin-bottom: 20px; }
-        label { display: block; margin-top: 15px; font-weight: bold; font-size: 14px; }
-        select, input { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .result { background: #eef7ff; padding: 15px; border-radius: 10px; margin-top: 20px; font-weight: bold; border-left: 5px solid #248bcf; text-align: center; }
-        button { width: 100%; padding: 15px; background: #248bcf; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 20px; }
-        button:active { background: #1a6fa3; }
+        body { font-family: 'Segoe UI', sans-serif; padding: 15px; background: #f4f7f6; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; margin-bottom: 20px; color: #2c3e50; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        select, input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { flex: 1; padding: 10px; text-align: center; background: #eee; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .tab.active { background: #3498db; color: white; }
+        .tab.active.sell { background: #e74c3c; }
+        #btn-save { width: 100%; padding: 15px; border: none; border-radius: 10px; color: white; font-size: 18px; font-weight: bold; cursor: pointer; background: #3498db; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h3>📦 Облік шин</h3>
-        
-        <label>Діаметр (R):</label>
-        <select id="diameter" onchange="calculate()">
-            <option value="13" data-weight="6.5">R13 (~6.5 кг)</option>
-            <option value="14" data-weight="7.5">R14 (~7.5 кг)</option>
-            <option value="15" data-weight="8.8">R15 (~8.8 кг)</option>
-            <option value="16" data-weight="10.5">R16 (~10.5 кг)</option>
-            <option value="17" data-weight="12.0">R17 (~12.0 кг)</option>
-            <option value="18" data-weight="13.5">R18 (~13.5 кг)</option>
-            <option value="20" data-weight="16.0">R20 (~16.0 кг)</option>
-        </select>
 
-        <label>Кількість (шт):</label>
-        <input type="number" id="count" value="1" min="1" oninput="calculate()">
-
-        <div class="result">
-            ЗАГАЛЬНА ВАГА: <span id="total-weight">6.5</span> кг
-        </div>
-
-        <button onclick="sendData()">💾 ЗБЕРЕГТИ В БАЗУ</button>
+<div class="card">
+    <h2 id="title">📦 Облік шин</h2>
+    
+    <div class="tabs">
+        <div id="tab-add" class="tab active" onclick="setMode('ADD')">➕ ПРИХІД</div>
+        <div id="tab-sub" class="tab" onclick="setMode('REMOVE')">➖ СПИСАННЯ</div>
     </div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+    <label>Діаметр (R):</label>
+    <select id="diameter">
+        <option value="R13">R13</option>
+        <option value="R14">R14</option>
+        <option value="R15">R15</option>
+        <option value="R16">R16</option>
+        <option value="R17">R17</option>
+        <option value="R18">R18</option>
+        <option value="R19">R19</option>
+        <option value="R20">R20</option>
+    </select>
 
-        function calculate() {
-            const select = document.getElementById('diameter');
-            const count = document.getElementById('count').value || 0;
-            const weight = select.options[select.selectedIndex].getAttribute('data-weight');
-            const total = (weight * count).toFixed(1);
-            document.getElementById('total-weight').innerText = total;
+    <label>Кількість (шт):</label>
+    <input type="number" id="count" value="1" min="1">
+
+    <div id="weight-section">
+        <label>Загальна вага (кг):</label>
+        <input type="number" id="weight" step="0.1" placeholder="Введіть вагу">
+    </div>
+
+    <button id="btn-save" onclick="sendData()">ЗБЕРЕГТИ</button>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    let mode = 'ADD';
+
+    function setMode(newMode) {
+        mode = newMode;
+        document.getElementById('tab-add').classList.toggle('active', mode === 'ADD');
+        document.getElementById('tab-sub').classList.toggle('active', mode === 'REMOVE');
+        
+        const btn = document.getElementById('btn-save');
+        const weightSection = document.getElementById('weight-section');
+        
+        if (mode === 'ADD') {
+            btn.style.background = '#3498db';
+            btn.innerText = 'ДОДАТИ НА СКЛАД';
+            weightSection.style.display = 'block';
+        } else {
+            btn.style.background = '#e74c3c';
+            btn.innerText = 'СПИСАТИ ЗІ СКЛАДУ';
+            weightSection.style.display = 'none';
         }
+    }
 
-        function sendData() {
-    const diam = document.getElementById('diameter').value;
-    const count = document.getElementById('count').value;
-    const weight = document.getElementById('total-weight').innerText;
+    function sendData() {
+        const d = document.getElementById('diameter').value;
+        const c = document.getElementById('count').value;
+        const w = document.getElementById('weight').value || "0";
+        
+        // Формуємо спец-рядок для бота
+        const message = `${mode} ${d} КІЛЬКІСТЬ ${c} ВАГА ${w}`;
+        tg.sendData(message);
+    }
+</script>
 
-    // Формуємо рядок даних (точно такий же формат)
-    const dataString = `ПРИЙОМ R${diam} КІЛЬКІСТЬ ${count} ВАГА ${weight}`;
-    
-    // ВІДПРАВЛЯЄМО ДАНІ В БОТ (через вбудований метод WebApp)
-    tg.sendData(dataString); 
-    
-    // Додаток закриється автоматично після sendData
-}
-    </script>
 </body>
 </html>
