@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ШИННИЙ КАЛЬКУЛЯТОР</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #f0f2f5; color: #333; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        h2 { text-align: center; color: #1a73e8; margin-top: 0; font-size: 22px; }
+        label { display: block; margin: 15px 0 5px; font-weight: 600; font-size: 14px; color: #666; }
+        select, input { width: 100%; padding: 14px; border: 2px solid #dfe1e5; border-radius: 12px; box-sizing: border-box; font-size: 18px; outline: none; transition: 0.3s; }
+        select:focus, input:focus { border-color: #1a73e8; }
+        .result-box { background: #e8f0fe; padding: 20px; border-radius: 12px; margin-top: 25px; text-align: center; border: 1px solid #c2d7ff; }
+        .result-label { font-size: 14px; color: #1967d2; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+        .result-value { font-size: 32px; font-weight: 800; color: #1a73e8; }
+        .unit { font-size: 18px; margin-left: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>🧮 Калькулятор ваги</h2>
+
+    <label>Оберіть радіус (R):</label>
+    <select id="diameter" onchange="updateCalc()">
+        <option value="R13">R13</option>
+        <option value="R14">R14</option>
+        <option value="R15">R15</option>
+        <option value="R16">R16</option>
+        <option value="R17">R17</option>
+        <option value="R18">R18</option>
+        <option value="R19">R19</option>
+        <option value="R20">R20</option>
+    </select>
+
+    <label>Кількість (шт):</label>
+    <input type="number" id="count" value="1" min="1" oninput="updateCalc()">
+
+    <label>Вага за 1 шт (кг):</label>
+    <input type="number" id="unit-weight" step="0.1" oninput="manualWeight()">
+
+    <div class="result-box">
+        <div class="result-label">Загальна вага</div>
+        <div class="result-value"><span id="total-w">0.00</span><span class="unit">кг</span></div>
+    </div>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    const weights = {
+        "R13": 6.5, "R14": 7.5, "R15": 8.5, "R16": 9.5,
+        "R17": 11.0, "R18": 12.5, "R19": 14.0, "R20": 16.0
+    };
+
+    let isManual = false;
+
+    function updateCalc() {
+        const d = document.getElementById('diameter').value;
+        const c = document.getElementById('count').value;
+        const unitInput = document.getElementById('unit-weight');
+        
+        if (!isManual) {
+            unitInput.value = weights[d];
+        }
+
+        const total = (unitInput.value * c).toFixed(2);
+        document.getElementById('total-w').innerText = total;
+    }
+
+    function manualWeight() {
+        isManual = true;
+        updateCalc();
+    }
+
+    // Скидаємо "ручний" режим, якщо міняємо радіус
+    document.getElementById('diameter').onmousedown = function() {
+        isManual = false;
+    };
+
+    // Початковий запуск
+    updateCalc();
+</script>
+
+</body>
+</html>
