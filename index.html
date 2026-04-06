@@ -2,36 +2,134 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>КАЛЬКУЛЯТОР ШИН</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ШИННИЙ КАЛЬКУЛЯТОР</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; padding: 15px; background: #f0f2f5; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        h2 { text-align: center; color: #1a73e8; margin-top: 0; }
-        label { display: block; margin: 10px 0 5px; font-weight: 600; color: #555; }
-        select, input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; transition: 0.3s; }
-        select:focus, input:focus { border-color: #1a73e8; }
-        .total-box { background: #e8f0fe; padding: 10px; border-radius: 8px; margin: 15px 0; text-align: center; font-weight: bold; color: #1967d2; }
-        #btn-send { width: 100%; padding: 15px; border: none; border-radius: 10px; color: white; font-size: 18px; font-weight: bold; cursor: pointer; background: #1a73e8; }
-        .mode-toggle { display: flex; gap: 10px; margin-bottom: 20px; }
-        .m-btn { flex: 1; padding: 10px; text-align: center; background: #ddd; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .m-btn.active { background: #1a73e8; color: white; }
-        .m-btn.active.red { background: #d93025; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 16px;
+            background: #f0f2f5;
+            color: #333;
+        }
+
+        .card {
+            background: #fff;
+            padding: 22px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.10);
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            text-align: center;
+            color: #1a73e8;
+            margin: 0 0 14px;
+            font-size: 22px;
+        }
+
+        label {
+            display: block;
+            margin: 12px 0 6px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #666;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 13px;
+            border: 2px solid #dfe1e5;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 17px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        select:focus, input:focus {
+            border-color: #1a73e8;
+        }
+
+        .result-box {
+            background: #e8f0fe;
+            border: 1px solid #c2d7ff;
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 14px;
+            color: #1967d2;
+            font-weight: 700;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .result-value {
+            font-size: 30px;
+            font-weight: 800;
+            color: #1a73e8;
+        }
+
+        .mode-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .m-btn {
+            flex: 1;
+            padding: 11px;
+            text-align: center;
+            background: #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            user-select: none;
+        }
+
+        .m-btn.active {
+            background: #1a73e8;
+            color: white;
+        }
+
+        .m-btn.active.red {
+            background: #d93025;
+        }
+
+        #btn-send {
+            width: 100%;
+            margin-top: 14px;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            background: #1a73e8;
+        }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
-
 <div class="card">
-    <h2 id="header">Шинний Калькулятор</h2>
-    
-    <div class="mode-toggle">
-        <div id="m-add" class="m-btn active" onclick="setMode('ADD')">ПРИЙОМ</div>
-        <div id="m-sub" class="m-btn" onclick="setMode('REMOVE')">СПИСАННЯ</div>
+    <h2 id="header">Шинний калькулятор</h2>
+
+    <div id="ops-controls" class="mode-toggle">
+        <div id="m-add" class="m-btn active" onclick="setOperationMode('ADD')">ПРИЙОМ</div>
+        <div id="m-sub" class="m-btn" onclick="setOperationMode('REMOVE')">СПИСАННЯ</div>
     </div>
 
     <label>Оберіть радіус (R):</label>
-    <select id="diameter" onchange="updateWeight()">
+    <select id="diameter" onchange="onDiameterChange()">
         <option value="R13">R13</option>
         <option value="R14">R14</option>
         <option value="R15">R15</option>
@@ -41,72 +139,115 @@
         <option value="R19">R19</option>
         <option value="R20">R20</option>
         <option value="R21">R21</option>
+        <option value="R22">R22</option>
+        <option value="R22і5">R22і5</option>
     </select>
 
     <label>Кількість (шт):</label>
-    <input type="number" id="count" value="1" min="1" oninput="updateWeight()">
+    <input type="number" id="count" value="1" min="1" oninput="updateTotal()">
 
     <label>Вага за 1 шт (кг):</label>
-    <input type="number" id="unit-weight" step="0.1" oninput="updateWeight()">
+    <input type="number" id="unit-weight" step="0.1" oninput="manualWeight()">
 
-    <div class="total-box">
-        ЗАГАЛЬНА ВАГА: <span id="total-w">0</span> кг
+    <div class="result-box">
+        <div class="result-label">Загальна вага</div>
+        <div class="result-value"><span id="total-w">0.00</span> кг</div>
     </div>
 
-    <button id="btn-send" onclick="send()">ЗБЕРЕГТИ В БАЗУ</button>
+    <button id="btn-send" onclick="sendOperation()">ЗБЕРЕГТИ В БАЗУ</button>
 </div>
 
 <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    const tg = window.Telegram?.WebApp;
+    if (tg) tg.expand();
 
-    // ВАШІ СТАЛІ ЗНАЧЕННЯ ВАГИ
+    const params = new URLSearchParams(window.location.search);
+    const pageMode = (params.get('mode') || 'operations').toLowerCase();
+
     const weights = {
-        "R13": 6.5, "R14": 7.0, "R15": 7.5, "R16": 9.0,
-        "R17": 11.0, "R18": 12.0, "R19": 12.5, "R20": 14.5, "R21": 15.0
+        R13: 5,
+        R14: 6,
+        R15: 6.5,
+        R16: 7,
+        R17: 10.0,
+        R18: 11,
+        R19: 12,
+        R20: 13,
+        R21: 14,
+        R22: 15,
+        R22і5: 38
     };
 
-    let mode = 'ADD';
+    let operationMode = 'ADD';
+    let isManual = false;
 
-    function setMode(m) {
-        mode = m;
-        document.getElementById('m-add').classList.toggle('active', m === 'ADD');
-        document.getElementById('m-sub').classList.toggle('active', m === 'REMOVE');
-        document.getElementById('m-sub').classList.toggle('red', m === 'REMOVE');
-        document.getElementById('btn-send').style.background = (m === 'ADD') ? '#1a73e8' : '#d93025';
-        updateWeight();
+    function applyPageMode() {
+        const opsControls = document.getElementById('ops-controls');
+        const sendButton = document.getElementById('btn-send');
+        const header = document.getElementById('header');
+
+        if (pageMode === 'calc') {
+            header.textContent = 'Калькулятор ваги';
+            opsControls.classList.add('hidden');
+            sendButton.classList.add('hidden');
+        } else {
+            header.textContent = 'Шинний калькулятор';
+            opsControls.classList.remove('hidden');
+            sendButton.classList.remove('hidden');
+        }
     }
 
-    function updateWeight() {
-        const d = document.getElementById('diameter').value;
-        const c = document.getElementById('count').value;
+    function setOperationMode(mode) {
+        operationMode = mode;
+        const addBtn = document.getElementById('m-add');
+        const subBtn = document.getElementById('m-sub');
+        const sendBtn = document.getElementById('btn-send');
+
+        addBtn.classList.toggle('active', mode === 'ADD');
+        subBtn.classList.toggle('active', mode === 'REMOVE');
+        subBtn.classList.toggle('red', mode === 'REMOVE');
+        sendBtn.style.background = mode === 'ADD' ? '#1a73e8' : '#d93025';
+    }
+
+    function onDiameterChange() {
+        isManual = false;
+        updateTotal();
+    }
+
+    function manualWeight() {
+        isManual = true;
+        updateTotal();
+    }
+
+    function updateTotal() {
+        const diameter = document.getElementById('diameter').value;
+        const countValue = Number(document.getElementById('count').value || 0);
         const unitInput = document.getElementById('unit-weight');
-        
-        // Якщо поле порожнє, підставляємо сталу вагу
-        if (!unitInput.value || unitInput.dataset.auto === "true") {
-            unitInput.value = weights[d];
-            unitInput.dataset.auto = "true";
+
+        if (!isManual || !unitInput.value) {
+            unitInput.value = weights[diameter];
         }
 
-        const total = (unitInput.value * c).toFixed(2);
+        const total = (Number(unitInput.value || 0) * countValue).toFixed(2);
         document.getElementById('total-w').innerText = total;
     }
 
-    // Відстежуємо, чи користувач міняв вагу вручну
-    document.getElementById('unit-weight').onfocus = function() { this.dataset.auto = "false"; };
+    function sendOperation() {
+        if (pageMode === 'calc') return;
 
-    function send() {
-        const d = document.getElementById('diameter').value;
-        const c = document.getElementById('count').value;
-        const tw = document.getElementById('total-w').innerText;
-        
-        const msg = `${mode} ${d} КІЛЬКІСТЬ ${c} ВАГА ${tw}`;
-        tg.sendData(msg);
+        const diameter = document.getElementById('diameter').value;
+        const countValue = document.getElementById('count').value;
+        const totalWeight = document.getElementById('total-w').innerText;
+        const payload = `${operationMode} ${diameter} КІЛЬКІСТЬ ${countValue} ВАГА ${totalWeight}`;
+
+        if (tg && typeof tg.sendData === 'function') {
+            tg.sendData(payload);
+        }
     }
 
-    // Початкова ініціалізація
-    updateWeight();
+    applyPageMode();
+    setOperationMode('ADD');
+    updateTotal();
 </script>
-
 </body>
 </html>
